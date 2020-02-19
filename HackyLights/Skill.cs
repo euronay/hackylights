@@ -94,8 +94,11 @@ namespace HackyLights
                                 }
                                 break;
                             case "PatternIntent":
-                                await SendCommand(LightCommand.Rainbow, Color.White);
-                                message = new PlainTextOutputSpeech { Text = $"Rainbow pattern!" };
+                                intentRequest.Intent.Slots.TryGetValue("pattern", out var patternSlot);
+                                var patternCommand = (LightCommand)Enum.Parse(typeof(LightCommand), patternSlot.Value, ignoreCase: true);
+
+                                await SendCommand(patternCommand, Color.White);
+                                message = new PlainTextOutputSpeech { Text = $"Playing {patternSlot.Value} pattern!" };
                                 response = ResponseBuilder.Tell(message);
                                 break;
                             case "TurnOffIntent":
@@ -119,7 +122,8 @@ namespace HackyLights
                 catch (Exception ex)
                 {
                     log.LogError(ex, "Error occured");
-                    response = ResponseBuilder.Empty();
+                    var message = new PlainTextOutputSpeech { Text = $"Sorry, an error occurred" };
+                    response = ResponseBuilder.Tell(message);
                 }
             }
             else if (request is SessionEndedRequest sessionEndedRequest)
